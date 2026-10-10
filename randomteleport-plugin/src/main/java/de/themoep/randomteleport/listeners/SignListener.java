@@ -20,6 +20,7 @@ package de.themoep.randomteleport.listeners;
 
 import de.themoep.randomteleport.RandomTeleport;
 import de.themoep.randomteleport.searcher.RandomSearcher;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -60,7 +61,12 @@ public class SignListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onSignDestroy(BlockBreakEvent event) {
         if (event.getBlock().getType().name().contains("SIGN")) {
-            Sign sign = (Sign) event.getBlock().getState();
+            BlockState state = event.getBlock().getState();
+            // A modded block with SIGN in its name (on a hybrid server like Arclight) has no Sign state
+            if (!(state instanceof Sign)) {
+                return;
+            }
+            Sign sign = (Sign) state;
             if (plugin.matchesSignVariable(sign.getLine(1))) {
                 if (!event.getPlayer().hasPermission("randomteleport.sign.destroy")) {
                     event.setCancelled(true);
@@ -76,7 +82,11 @@ public class SignListener implements Listener {
     public void onSignClick(PlayerInteractEvent event) {
         if (event.getHand() == EquipmentSlot.HAND && event.getAction() == Action.RIGHT_CLICK_BLOCK
                 && event.getClickedBlock() != null && event.getClickedBlock().getType().name().contains("SIGN")) {
-            Sign sign = (Sign) event.getClickedBlock().getState();
+            BlockState state = event.getClickedBlock().getState();
+            if (!(state instanceof Sign)) {
+                return;
+            }
+            Sign sign = (Sign) state;
             if (plugin.matchesSignVariable(sign.getLine(1))) {
                 String preset = sign.getLine(2).toLowerCase();
                 if (event.getPlayer().hasPermission("randomteleport.sign.preset." + preset)) {
